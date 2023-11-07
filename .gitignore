@@ -1,0 +1,8 @@
+/venv/
+data/
+results/
+.idea
+__pycache__/
+build/
+dist/
+Lindel.egg-info/
