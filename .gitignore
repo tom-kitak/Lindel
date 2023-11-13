@@ -1,0 +1,10 @@
+/venv/
+data/local/
+results/
+.idea
+__pycache__/
+build/
+dist/
+Lindel.egg-info/
+Lindel_data/
+.ipynb_checkpoints/

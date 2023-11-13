@@ -12,7 +12,7 @@ from keras.callbacks import EarlyStopping
 from keras.layers import Dense, Input, Flatten
 from keras.models import Sequential, load_model
 from keras.regularizers import l2, l1
-from Modeling.gen_features import *
+# from Modeling.gen_features import *
 
 
 # Define useful functions
@@ -47,8 +47,10 @@ def onehotencoder(seq):
 #threshold = sys.argv[1]
 
 
-workdir  = sys.argv[1]
-fname    = sys.argv[2]
+# workdir  = sys.argv[1]
+# fname    = sys.argv[2]
+workdir  = "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\Lindel_data\\"
+fname    = "Lindel_training.txt"
 
 label,rev_index,features = pkl.load(open(workdir+'feature_index_all.pkl','rb'))
 feature_size = len(features) + 384 
@@ -108,8 +110,8 @@ for l in tqdm(lambdas):
     errors_l1.append(mse(y_hat, y_valid))
 
 
-np.save(workdir+'mse_l1_ins.npy',errors_l1)
-np.save(workdir+'mse_l2_ins.npy',errors_l2)
+np.save(workdir+'save_insertion\\mse_l1_ins.npy',errors_l1)
+np.save(workdir+'save_insertion\\mse_l2_ins.npy',errors_l2)
 
 # final model
 l = lambdas[np.argmin(errors_l1)]
@@ -120,7 +122,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['mse']
 history = model.fit(x_train, y_train, epochs=100, validation_data=(x_valid, y_valid), 
           callbacks=[EarlyStopping(patience=1)], verbose=0)
 
-model.save(workdir+'L1_ins.h5')
+model.save(workdir+'save_insertion\\L1_ins.h5')
 
 
 l = lambdas[np.argmin(errors_l2)]
@@ -131,4 +133,4 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['mse']
 history = model.fit(x_train, y_train, epochs=100, validation_data=(x_valid, y_valid), 
           callbacks=[EarlyStopping(patience=1)], verbose=0)
 
-model.save(workdir+'L2_ins.h5')
+model.save(workdir+'save_insertion\\L2_ins.h5')

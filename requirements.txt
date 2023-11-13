@@ -1,0 +1,8 @@
+biopython
+tqdm
+matplotlib
+scipy
+numpy
+keras
+pandas
+tensorflow

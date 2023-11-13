@@ -44,8 +44,10 @@ def onehotencoder(seq):
     return encode
 
 # Load data
-workdir  = sys.argv[1]
-fname    = sys.argv[2]
+# workdir  = sys.argv[1]
+# fname    = sys.argv[2]
+workdir  = "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\Lindel_data\\"
+fname    = "Lindel_training.txt"
 
 label,rev_index,features = pkl.load(open(workdir+'feature_index_all.pkl','rb'))
 feature_size = len(features) + 384 
@@ -101,8 +103,8 @@ for l in tqdm(lambdas):
     errors_l1.append(mse(y_hat, y_valid))
 
 
-np.save(workdir+'mse_l1_indel.npy',errors_l1)
-np.save(workdir+'mse_l2_indel.npy',errors_l2)
+np.save(workdir+'saved\\mse_l1_indel.npy',errors_l1)
+np.save(workdir+'saved\\mse_l2_indel.npy',errors_l2)
 
 # final model
 l = lambdas[np.argmin(errors_l1)]
@@ -113,7 +115,7 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['mse'])
 history = model.fit(x_train, y_train, epochs=100, validation_data=(x_valid, y_valid), 
           callbacks=[EarlyStopping(patience=1)], verbose=0)
 
-model.save(workdir+'L1_indel.h5')
+model.save(workdir+'saved\\L1_indel.h5')
 
 
 l = lambdas[np.argmin(errors_l2)]
@@ -124,4 +126,4 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['mse'])
 history = model.fit(x_train, y_train, epochs=100, validation_data=(x_valid, y_valid), 
           callbacks=[EarlyStopping(patience=1)], verbose=0)
 
-model.save(workdir+'L2_indel.h5')
+model.save(workdir+'saved\\L2_indel.h5')
