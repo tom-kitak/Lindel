@@ -1,6 +1,8 @@
 import numpy as np
 from keras.models import load_model
 import pickle as pkl
+import pandas as pd
+from tqdm import tqdm
 
 
 def onehotencoder(seq):
@@ -27,37 +29,42 @@ def onehotencoder(seq):
 
 
 if __name__ == "__main__":
-    # Load the saved model
-    workdir = "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\Lindel_data\\"
-    fname = "Lindel_test.txt"
 
-    label, rev_index, features = pkl.load(open(workdir + 'feature_index_all.pkl', 'rb'))
-    feature_size = len(features) + 384
-    data = np.loadtxt(workdir + fname, delimiter="\t", dtype=str)
-    Seqs = data[:, 0]
-    data = data[:, 1:].astype('float32')
+    settings = {
+        "window_length": 8,
+        "save_model_folder": "insertions_alibi_data\\",
+        "data_dir": "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\",
+        "labels_dir":
+            "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\train_insertions_8length\\",
+    }
 
-    # Sum up deletions and insertions to
-    X = data[:, :feature_size]
-    y = data[:, feature_size:]
+    # Set up
+    sequences_df = pd.read_csv(settings["data_dir"]
+                               + f"target_sequences_explorative_train_centered_{settings['window_length']}length.csv")
 
-    Seq_train = Seqs
-    x_test, y_test = [], []
-    for i in range(len(y)):
-        if 1 > sum(y[i, -21:]) > 0:  # 5 is a random number i picked if i use pred_size here it will be -21:0 it will just generate empty array
-            y_test.append(y[i, -21:] / sum(y[i, -21:]))
-            x_test.append(onehotencoder(Seq_train[i][-6:]))
+    # Preprocess data
+    X, y = [], []
+    for index, row in tqdm(sequences_df.iterrows(), total=len(sequences_df)):
+        oligo_id, sequence, _, _, _, _ = row
+        try:
+            labels = np.loadtxt(settings["labels_dir"] + f"label_{oligo_id[5:]}.csv")
+        except FileNotFoundError:
+            # File is missing, skip this target sequence
+            continue
+        X.append(onehotencoder(sequence))
+        y.append(labels)
 
-    x_test, y_test = np.array(x_test), np.array(y_test)
+    X = np.array(X)
+    y = np.array(y)
 
     # Load the model
-    model = load_model(workdir + 'save_insertion\\L1_ins.h5')
+    model = load_model(settings["data_dir"] + settings["save_model_folder"] + "L1_ins.h5")
 
-    predictions = model.predict(x_test)
+    predictions = model.predict(X)
     pear_coeffs = []
 
     for p in range(len(predictions)):
-        pear_coeffs.append(np.corrcoef(predictions[p], y_test[p])[0][1])
+        pear_coeffs.append(np.corrcoef(predictions[p], y[p])[0][1])
 
     pear_coeff = np.array(pear_coeffs).mean()
     print("Pearson Correlation Coefficient:", pear_coeff)
