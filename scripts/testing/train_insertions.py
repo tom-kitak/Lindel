@@ -59,21 +59,20 @@ def ensure_directory_exists(directory_path):
 
 
 if __name__ == "__main__":
-
     settings = {
-        "window_length": 8,
+        "window_length": 52,
+        "save_model_folder": "insertions_52wl_alibi_data\\",
         "validation_set": 0.1,  # Validation set percentage
-        "save_model_folder": "insertions_alibi_data\\",
-        "num_outcomes": 19,
-        "data_dir": "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\",
-        "labels_dir":
-            "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\train_insertions_8length\\",
+        "num_outcomes": 20,
     }
+    DATA_DIR = "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\"
+    LABELS_DIR = DATA_DIR + f"train_insertions_{settings['window_length']}length\\"
 
-    ensure_directory_exists(settings["data_dir"] + settings["save_model_folder"])
+    # Train code
+    ensure_directory_exists(DATA_DIR + settings["save_model_folder"])
 
     # Set up
-    sequences_df = pd.read_csv(settings["data_dir"]
+    sequences_df = pd.read_csv(DATA_DIR
                                + f"target_sequences_explorative_train_centered_{settings['window_length']}length.csv")
 
     # Preprocess data
@@ -81,7 +80,7 @@ if __name__ == "__main__":
     for index, row in tqdm(sequences_df.iterrows(), total=len(sequences_df)):
         oligo_id, sequence, _, _, _, _ = row
         try:
-            labels = np.loadtxt(settings["labels_dir"] + f"label_{oligo_id[5:]}.csv")
+            labels = np.loadtxt(LABELS_DIR + f"label_{oligo_id[5:]}.csv")
         except FileNotFoundError:
             # File is missing, skip this target sequence
             continue
@@ -129,8 +128,8 @@ if __name__ == "__main__":
         y_hat = model.predict(x_valid)
         errors_l1.append(mse(y_hat, y_valid))
 
-    np.save(settings["data_dir"] + settings["save_model_folder"] + "mse_l1_ins.npy", errors_l1)
-    np.save(settings["data_dir"] + settings["save_model_folder"] + "mse_l2_ins.npy", errors_l2)
+    np.save(DATA_DIR + settings["save_model_folder"] + "mse_l1_ins.npy", errors_l1)
+    np.save(DATA_DIR + settings["save_model_folder"] + "mse_l2_ins.npy", errors_l2)
 
     # final model
     l = lambdas[np.argmin(errors_l1)]
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     history = model.fit(x_train, y_train, epochs=100, validation_data=(x_valid, y_valid),
                         callbacks=[EarlyStopping(patience=1)], verbose=0)
 
-    model.save(settings["data_dir"] + settings["save_model_folder"] + "L1_ins.h5")
+    model.save(DATA_DIR + settings["save_model_folder"] + "L1_ins.h5")
 
     l = lambdas[np.argmin(errors_l2)]
     np.random.seed(0)
@@ -151,6 +150,6 @@ if __name__ == "__main__":
     history = model.fit(x_train, y_train, epochs=100, validation_data=(x_valid, y_valid),
                         callbacks=[EarlyStopping(patience=1)], verbose=0)
 
-    model.save(settings["data_dir"] + settings["save_model_folder"] + "L2_ins.h5")
+    model.save(DATA_DIR + settings["save_model_folder"] + "L2_ins.h5")
 
 

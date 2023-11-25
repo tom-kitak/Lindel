@@ -31,15 +31,14 @@ def onehotencoder(seq):
 if __name__ == "__main__":
 
     settings = {
-        "window_length": 8,
-        "save_model_folder": "insertions_alibi_data\\",
-        "data_dir": "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\",
-        "labels_dir":
-            "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\train_insertions_8length\\",
+        "window_length": 52,
+        "save_model_folder": "insertions_52wl_alibi_data\\",
     }
+    DATA_DIR = "C:\\Users\\tomaz\\OneDrive\\Namizje\\AI4CRISPR\\Lindel\\FORECasT_data\\"
+    LABELS_DIR = DATA_DIR + f"train_insertions_{settings['window_length']}length\\"
 
     # Set up
-    sequences_df = pd.read_csv(settings["data_dir"]
+    sequences_df = pd.read_csv(DATA_DIR
                                + f"target_sequences_explorative_train_centered_{settings['window_length']}length.csv")
 
     # Preprocess data
@@ -47,7 +46,7 @@ if __name__ == "__main__":
     for index, row in tqdm(sequences_df.iterrows(), total=len(sequences_df)):
         oligo_id, sequence, _, _, _, _ = row
         try:
-            labels = np.loadtxt(settings["labels_dir"] + f"label_{oligo_id[5:]}.csv")
+            labels = np.loadtxt(LABELS_DIR + f"label_{oligo_id[5:]}.csv")
         except FileNotFoundError:
             # File is missing, skip this target sequence
             continue
@@ -58,7 +57,7 @@ if __name__ == "__main__":
     y = np.array(y)
 
     # Load the model
-    model = load_model(settings["data_dir"] + settings["save_model_folder"] + "L1_ins.h5")
+    model = load_model(DATA_DIR + settings["save_model_folder"] + "L2_ins.h5")
 
     predictions = model.predict(X)
     pear_coeffs = []
